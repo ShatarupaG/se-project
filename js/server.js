@@ -113,6 +113,28 @@ app.post('/register', async (req, res) => {
   }
 });
 
+app.post('/addquestions', async (req, res) => {
+  const questionData = req.body;
+
+  try {
+
+    const collection = client.db('smartdb').collection('questions');
+
+    collection.insertOne(questionData, (err, result) => {
+      if (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Internal server error' });
+      } else {
+        console.log(`Inserted ${result.insertedCount} document into the collection`);
+        res.json({ success: true });
+      }
+    });
+  } catch (error) {
+    console.error('Error hashing password:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Route to authenticate and login user
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -161,7 +183,15 @@ app.get('/question', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
+app.get('/getDocumentCount', async (req, res) => {
+  try {
+      const docNumber = client.db('smartdb').collection('questions').countDocuments();
+      res.json({ documentCount });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
 app.get('/getSessionUser', async (req, res) => {
   try {
     const currUser = req.session.user;
@@ -213,6 +243,36 @@ app.get('/getUserResponses', async (req, res) => {
     const userResponses = await collection.find({ userId }).toArray();
 
     res.json(userResponses);
+  } catch (error) {
+    console.error('Error fetching user responses:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Route to get attemps
+app.get('/getAttempts', async (req, res) => {
+  try {
+    const attempts = client.db('smartdb').collection('attempts');
+    const documents = await attempts.find().toArray();
+
+    const userIds = documents.map(attempt => attempt.userId);
+    const users = await client.db('smartdb').collection('users').find({ _id: { $in: userIds } }).toArray();
+
+    const userMap = {};
+    users.forEach(user => {
+      userMap[user._id] = user;
+    });
+
+    const result = documents.map(attempt => {
+      return {
+        userId: attempt.userId,
+        username: userMap[attempt.userId] ? userMap[attempt.userId].username : 'Not found',
+        date: attempt.date,
+        result: attempt.result,
+      };
+    });
+
+    res.json(result);
   } catch (error) {
     console.error('Error fetching user responses:', error);
     res.status(500).json({ error: 'Internal server error' });
