@@ -1,6 +1,6 @@
 async function fetchData() {
   try {
-    const response = await fetch(`http://localhost:3000/getAttempts`);
+    const response = await fetch(`http://34.125.80.10:3000/getAttempts`);
     const data = await response.json();
     return data;
   }catch (error) {

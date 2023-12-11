@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   form.addEventListener('submit', async function (event) {
       event.preventDefault();
     try {
-      const response = await fetch('http://localhost:3000/getDocumentCount');
+      const response = await fetch('http://34.125.80.10:3000/getDocumentCount');
       const { documentCount } = await response.json();
 
       // Get form data
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', async function () {
           };
           countObj.count++;
 
-          return fetch('http://localhost:3000/addquestion', {
+          return fetch('http://34.125.80.10:3000/addquestion', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
